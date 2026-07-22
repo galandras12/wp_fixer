@@ -4,7 +4,7 @@ Tags: login, performance, wp-login, smtp, debug
 Requires at least: 5.7
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,10 @@ A plugin négy, egymástól függetlenül ki- és bekapcsolható modulból áll:
    háttérbe tétele" listában válaszd ki, melyik plugin(oka)t szeretnéd háttérbe tenni.
 
 == Changelog ==
+
+= 1.1.0 =
+* Új diagnosztika: PHP feldolgozási idő mérése (REQUEST_TIME_FLOAT alapján), hogy kiderüljön, a késés a WordPress kódjában vagy azt megelőzően (hálózat, szerver sor, PHP-FPM workerhiány) keletkezik-e.
+* A HTTP időkorlát és az email-halasztás mostantól a WP Heartbeat, a WP-Cron és a felismert "online állapot" / szinkronizációs ajax kérésekre is kiterjed, mivel ezek is lefoglalhatnak egy PHP-workert vagy munkamenet-zárat a bejelentkezés elől.
 
 = 1.0.0 =
 * Első kiadás.

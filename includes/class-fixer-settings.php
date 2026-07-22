@@ -21,6 +21,9 @@ class Fixer_Settings {
 			'deferred_slugs'        => array(),
 			'login_ajax_actions'    => array( 'ajaxlogin', 'lwa_ajax_login', 'lwa_login' ),
 			'auto_detect_ajax_login' => true,
+			'guard_background_requests'  => true,
+			'background_ajax_actions'    => array(),
+			'auto_detect_background_ajax' => true,
 			'log_retention'         => 500,
 		);
 	}
@@ -45,6 +48,19 @@ class Fixer_Settings {
 		$clean['mail_queue_enabled']     = ! empty( $input['mail_queue_enabled'] );
 		$clean['deferral_enabled']       = ! empty( $input['deferral_enabled'] );
 		$clean['auto_detect_ajax_login'] = ! empty( $input['auto_detect_ajax_login'] );
+		$clean['guard_background_requests']   = ! empty( $input['guard_background_requests'] );
+		$clean['auto_detect_background_ajax'] = ! empty( $input['auto_detect_background_ajax'] );
+
+		$clean['background_ajax_actions'] = array();
+		if ( ! empty( $input['background_ajax_actions'] ) ) {
+			$raw = is_array( $input['background_ajax_actions'] ) ? $input['background_ajax_actions'] : explode( ',', (string) $input['background_ajax_actions'] );
+			foreach ( $raw as $item ) {
+				$item = trim( sanitize_text_field( $item ) );
+				if ( '' !== $item ) {
+					$clean['background_ajax_actions'][] = $item;
+				}
+			}
+		}
 
 		$clean['deferred_slugs'] = array();
 		if ( ! empty( $input['deferred_slugs'] ) && is_array( $input['deferred_slugs'] ) ) {

@@ -3,7 +3,7 @@
  * Plugin Name:       Fixer
  * Plugin URI:        https://github.com/galandras12/wp_fixer
  * Description:       Megszünteti a bejelentkezési képernyő 30-50 másodperces beragadását a felhasználónév/jelszó megadása után. Minden javítás külön ki- és bekapcsolható a Beállítások → Fixer oldalon.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 5.7
  * Requires PHP:      7.4
  * Author:            Fixer
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FIXER_VERSION', '1.0.0' );
+define( 'FIXER_VERSION', '1.1.0' );
 define( 'FIXER_FILE', __FILE__ );
 define( 'FIXER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'FIXER_URL', plugin_dir_url( __FILE__ ) );

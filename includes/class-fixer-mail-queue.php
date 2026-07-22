@@ -28,7 +28,7 @@ class Fixer_Mail_Queue {
 	public static function maybe_queue( $short_circuit, $atts ) {
 		$opts = Fixer_Settings::get_options();
 
-		if ( self::$bypass || empty( $opts['mail_queue_enabled'] ) || ! Fixer_Request_Detector::is_login_request() ) {
+		if ( self::$bypass || empty( $opts['mail_queue_enabled'] ) || ! Fixer_Request_Detector::is_guarded_request() ) {
 			return $short_circuit;
 		}
 

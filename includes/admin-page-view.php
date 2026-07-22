@@ -12,6 +12,7 @@ $type_labels = array(
 	'http_capped'    => __( 'Korlátozott HTTP hívás', 'fixer' ),
 	'mail_deferred'  => __( 'Halasztott email', 'fixer' ),
 	'hook_deferred'  => __( 'Háttérbe tett hook', 'fixer' ),
+	'php_wall_time'  => __( 'PHP feldolgozási idő', 'fixer' ),
 );
 
 // Group the log by request, and work out the slowest contributor per request.
@@ -22,15 +23,18 @@ foreach ( $log as $row ) {
 
 $requests_summary = array();
 foreach ( $by_request as $request_id => $rows ) {
-	$total    = 0;
-	$slowest  = null;
-	$when     = $rows[0]->created_at;
+	$total     = 0;
+	$slowest   = null;
+	$wall_time = null;
+	$when      = $rows[0]->created_at;
 	foreach ( $rows as $row ) {
 		if ( 'hook_timing' === $row->type && null !== $row->duration_ms ) {
 			$total += (float) $row->duration_ms;
 			if ( null === $slowest || (float) $row->duration_ms > $slowest->duration_ms ) {
 				$slowest = $row;
 			}
+		} elseif ( 'php_wall_time' === $row->type ) {
+			$wall_time = $row;
 		}
 	}
 	$requests_summary[] = array(
@@ -38,6 +42,7 @@ foreach ( $by_request as $request_id => $rows ) {
 		'when'       => $when,
 		'total_ms'   => $total,
 		'slowest'    => $slowest,
+		'wall_time'  => $wall_time,
 		'rows'       => $rows,
 	);
 }
@@ -83,6 +88,16 @@ $latest = isset( $requests_summary[0] ) ? $requests_summary[0] : null;
 					?>
 				<?php endif; ?>
 			</p>
+			<?php if ( $latest['wall_time'] ) : ?>
+				<p>
+					<strong><?php esc_html_e( 'PHP feldolgozási idő (a szerveren belül):', 'fixer' ); ?></strong>
+					<?php echo esc_html( $latest['wall_time']->duration_ms ); ?> ms
+					<br />
+					<em>
+						<?php esc_html_e( 'Ha ez a szám sokkal kisebb, mint amennyit a böngésződ mért (pl. 300 ms a 98 másodperc helyett), a késés nem a WordPress kódjában keletkezik, hanem még mielőtt a PHP elkezdte volna feldolgozni a kérést (hálózat, tűzfal, vagy a szerveren várakozó, lefoglalt PHP workerek). Ebben az esetben a szerver/tárhely oldali beállításokat kell megnézni, WordPress-plugin ezt nem tudja megoldani.', 'fixer' ); ?>
+					</em>
+				</p>
+			<?php endif; ?>
 		</div>
 	<?php endif; ?>
 
@@ -143,6 +158,36 @@ $latest = isset( $requests_summary[0] ) ? $requests_summary[0] : null;
 						<input type="checkbox" name="fixer_options[mail_queue_enabled]" value="1" <?php checked( $opts['mail_queue_enabled'] ); ?> />
 						<?php esc_html_e( 'A bejelentkezés alatt kiküldött emaileket (pl. „valaki bejelentkezett” értesítők) nem azonnal, hanem egy háttérfolyamatban küldi el, hogy az SMTP kapcsolat felépülése ne lassítsa a bejelentkezést.', 'fixer' ); ?>
 					</label>
+				</td>
+			</tr>
+		</table>
+
+		<h2 class="title"><?php esc_html_e( 'Háttérkérések védelme (Heartbeat, WP-Cron, online állapot)', 'fixer' ); ?></h2>
+		<p><?php esc_html_e( 'Előfordulhat, hogy nem maga a bejelentkezési kérés lassú, hanem egy vele egy időben futó másik kérés (pl. böngészőben nyitva hagyott lap "Heartbeat" lekérdezése, az Ultimate Member – Online plugin online állapot lekérdezése, vagy egy Jetpack szinkronizáció) foglalja le a szerver egy PHP-workerét vagy a munkamenet-zárat, és emiatt kell várnia a bejelentkezésnek. Ez a beállítás ezekre a háttérkérésekre is kiterjeszti a fenti HTTP időkorlátot és email-halasztást.', 'fixer' ); ?></p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Bekapcsolva', 'fixer' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" name="fixer_options[guard_background_requests]" value="1" <?php checked( $opts['guard_background_requests'] ); ?> />
+						<?php esc_html_e( 'A WP Heartbeat és a WP-Cron kérések automatikusan védve vannak, ha ez be van kapcsolva.', 'fixer' ); ?>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Automatikus felismerés', 'fixer' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" name="fixer_options[auto_detect_background_ajax]" value="1" <?php checked( $opts['auto_detect_background_ajax'] ); ?> />
+						<?php esc_html_e( '„online”, „presence”, „sync” vagy „status” szót tartalmazó admin-ajax műveletek automatikusan háttérkérésnek számítanak.', 'fixer' ); ?>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="fixer_bg_actions"><?php esc_html_e( 'Egyéb ajax művelet nevek', 'fixer' ); ?></label></th>
+				<td>
+					<input type="text" id="fixer_bg_actions" name="fixer_options[background_ajax_actions]" value="<?php echo esc_attr( implode( ', ', $opts['background_ajax_actions'] ) ); ?>" class="regular-text" />
+					<p class="description"><?php esc_html_e( 'Vesszővel elválasztva, ha tudod egy plugin pontos ajax action nevét (pl. az Ultimate Member – Online saját lekérdezéséét).', 'fixer' ); ?></p>
 				</td>
 			</tr>
 		</table>

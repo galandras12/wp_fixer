@@ -22,7 +22,7 @@ class Fixer_Http_Guard {
 	public static function cap_timeout( $args, $url ) {
 		$opts = Fixer_Settings::get_options();
 
-		if ( empty( $opts['http_guard_enabled'] ) || ! Fixer_Request_Detector::is_login_request() ) {
+		if ( empty( $opts['http_guard_enabled'] ) || ! Fixer_Request_Detector::is_guarded_request() ) {
 			return $args;
 		}
 

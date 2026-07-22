@@ -10,8 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Fixer_Request_Detector {
 
-	private static $is_login_request = null;
-	private static $request_id       = null;
+	private static $is_login_request      = null;
+	private static $is_background_request = null;
+	private static $request_id            = null;
 
 	public static function is_login_request() {
 		if ( null !== self::$is_login_request ) {
@@ -49,6 +50,66 @@ class Fixer_Request_Detector {
 		}
 
 		return self::$is_login_request = $result;
+	}
+
+	/**
+	 * Requests that don't authenticate anyone, but can still hog a PHP-FPM
+	 * worker or hold a PHP session lock long enough to make a *later* login
+	 * request queue behind them: the WP Heartbeat API, WP-Cron, and any
+	 * "presence" / "online status" / sync style AJAX polling.
+	 */
+	public static function is_background_request() {
+		if ( null !== self::$is_background_request ) {
+			return self::$is_background_request;
+		}
+
+		$result = false;
+
+		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+			$result = true;
+		}
+
+		if ( ! $result && wp_doing_ajax() ) {
+			$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			if ( 'heartbeat' === $action ) {
+				$result = true;
+			} elseif ( '' !== $action ) {
+				$opts = Fixer_Settings::get_options();
+
+				foreach ( $opts['background_ajax_actions'] as $needle ) {
+					if ( '' !== $needle && false !== stripos( $action, $needle ) ) {
+						$result = true;
+						break;
+					}
+				}
+
+				if ( ! $result && ! empty( $opts['auto_detect_background_ajax'] ) ) {
+					foreach ( array( 'online', 'presence', 'heartbeat', 'sync', 'status' ) as $keyword ) {
+						if ( false !== stripos( $action, $keyword ) ) {
+							$result = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		return self::$is_background_request = $result;
+	}
+
+	/**
+	 * Whether HTTP-timeout capping / mail deferral should apply to the
+	 * current request: either it's the login attempt itself, or (if enabled)
+	 * a background request that could otherwise starve a following login.
+	 */
+	public static function is_guarded_request() {
+		if ( self::is_login_request() ) {
+			return true;
+		}
+
+		$opts = Fixer_Settings::get_options();
+		return ! empty( $opts['guard_background_requests'] ) && self::is_background_request();
 	}
 
 	/**

@@ -48,6 +48,17 @@ class Fixer_Logger {
 		);
 	}
 
+	public static function log_php_wall_time( $ms ) {
+		self::add(
+			'php_wall_time',
+			'',
+			'',
+			'wp_login',
+			__( 'PHP feldolgozási idő ettől a kéréstől számítva (REQUEST_TIME_FLOAT). Ha ez sokkal kisebb, mint amennyit a böngésző mutatott, a késés nem a WordPress kódban, hanem előtte (hálózat, szerver sor) keletkezik.', 'fixer' ),
+			round( $ms, 1 )
+		);
+	}
+
 	public static function log_hook_deferred( $hook, $desc ) {
 		self::add(
 			'hook_deferred',
