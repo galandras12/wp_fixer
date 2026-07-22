@@ -16,6 +16,7 @@ class Fixer_Admin_Page {
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		add_action( 'admin_post_fixer_clear_log', array( __CLASS__, 'handle_clear_log' ) );
+		add_action( 'admin_post_fixer_delete_expired_transients', array( __CLASS__, 'handle_delete_expired_transients' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 	}
 
@@ -57,14 +58,51 @@ class Fixer_Admin_Page {
 		exit;
 	}
 
+	public static function handle_delete_expired_transients() {
+		if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'fixer_delete_expired_transients' ) ) {
+			wp_die( esc_html__( 'Nincs jogosultság.', 'fixer' ) );
+		}
+
+		global $wpdb;
+		$timeout_rows = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_value < %d",
+				$wpdb->esc_like( '_transient_timeout_' ) . '%',
+				time()
+			)
+		); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+
+		$deleted = 0;
+		foreach ( $timeout_rows as $timeout_name ) {
+			$transient = preg_replace( '/^_transient_timeout_/', '', $timeout_name );
+			if ( delete_transient( $transient ) ) {
+				$deleted++;
+			}
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array( 'page' => self::PAGE_SLUG, 'tab' => 'server', 'fixer_transients_deleted' => $deleted ),
+				admin_url( 'options-general.php' )
+			)
+		);
+		exit;
+	}
+
 	public static function render() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
-		$opts      = Fixer_Settings::get_options();
-		$discovery = Fixer_Hook_Deferral::discover();
-		$log       = Fixer_Logger::get_recent( 300 );
+		$opts       = Fixer_Settings::get_options();
+		$discovery  = Fixer_Hook_Deferral::discover();
+		$log        = Fixer_Logger::get_recent( 300 );
+		$tab        = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'login'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! in_array( $tab, array( 'login', 'server', 'performance' ), true ) ) {
+			$tab = 'login';
+		}
+		$server_checks     = 'server' === $tab ? Fixer_Server_Info::get_checks() : array();
+		$autoload_options  = 'server' === $tab ? Fixer_Server_Info::get_largest_autoloaded_options() : array();
 
 		require FIXER_DIR . 'includes/admin-page-view.php';
 	}

@@ -4,7 +4,7 @@ Tags: login, performance, wp-login, smtp, debug
 Requires at least: 5.7
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,18 @@ A plugin négy, egymástól függetlenül ki- és bekapcsolható modulból áll:
    háttérkérésben fussanak le, ne a bejelentkezés közben. A tényleges hitelesítés (felhasználónév/
    jelszó ellenőrzése) ettől mindig érintetlen marad.
 
+A Beállítások → Fixer oldalon két további fül is található:
+
+* **Szerver diagnosztika** – csak tájékoztató jellegű, semmit nem módosít: PHP memória- és
+  időkorlátok, OPcache és állandó objektum-gyorsítótár állapota, adatbázis-tábla méretek,
+  automatikusan betöltött ("autoload") beállítások mérete (a legnagyobbak listájával), ütemezett
+  WP-Cron események és lejárt tranzitensek száma. Ez mutatja meg, hogy egy lassulás oka a
+  WordPress-en belül vagy a szerver/tárhely oldalán keresendő-e.
+* **Teljesítmény** – az egész oldal (nem csak a bejelentkezés) betöltését gyorsító, egyenként
+  ki/be kapcsolható optimalizálások: emoji-szkriptek és felesleges `<head>` elemek eltávolítása,
+  képek lusta betöltése, új feltöltésű JPEG képek tömörítése, a Heartbeat API ritkítása/kikapcsolása
+  a látogatói oldalakon, bejegyzés-revíziók korlátozása, és az XML-RPC letiltása.
+
 == Installation ==
 
 1. Töltsd fel a plugin mappáját a `/wp-content/plugins/fixer` könyvtárba.
@@ -43,6 +55,10 @@ A plugin négy, egymástól függetlenül ki- és bekapcsolható modulból áll:
    háttérbe tétele" listában válaszd ki, melyik plugin(oka)t szeretnéd háttérbe tenni.
 
 == Changelog ==
+
+= 1.2.0 =
+* Új "Szerver diagnosztika" fül: PHP memória/idő limitek, OPcache, objektum-gyorsítótár, autoload méret és legnagyobb bejegyzések, adatbázis-tábla méretek, cron- és tranziens-számláló, lejárt tranzitensek törlése gombbal.
+* Új "Teljesítmény" fül: emoji-szkriptek és felesleges head-elemek eltávolítása, képek lusta betöltése, új JPEG feltöltések tömörítése, Heartbeat ritkítás/kikapcsolás, revízió-korlátozás, XML-RPC letiltása - mind egyenként ki/be kapcsolható.
 
 = 1.1.0 =
 * Új diagnosztika: PHP feldolgozási idő mérése (REQUEST_TIME_FLOAT alapján), hogy kiderüljön, a késés a WordPress kódjában vagy azt megelőzően (hálózat, szerver sor, PHP-FPM workerhiány) keletkezik-e.

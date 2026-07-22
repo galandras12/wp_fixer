@@ -25,6 +25,17 @@ class Fixer_Settings {
 			'background_ajax_actions'    => array(),
 			'auto_detect_background_ajax' => true,
 			'log_retention'         => 500,
+
+			'opt_disable_emoji'     => true,
+			'opt_clean_head'        => true,
+			'opt_lazy_images'       => true,
+			'opt_heartbeat_control' => true,
+			'heartbeat_interval'    => 60,
+			'opt_limit_revisions'   => true,
+			'revisions_to_keep'     => 5,
+			'opt_jpeg_quality'      => false,
+			'jpeg_quality'          => 82,
+			'opt_disable_xmlrpc'    => false,
 		);
 	}
 
@@ -84,6 +95,17 @@ class Fixer_Settings {
 		}
 
 		$clean['log_retention'] = isset( $input['log_retention'] ) ? min( 5000, max( 50, (int) $input['log_retention'] ) ) : $defaults['log_retention'];
+
+		$clean['opt_disable_emoji']     = ! empty( $input['opt_disable_emoji'] );
+		$clean['opt_clean_head']        = ! empty( $input['opt_clean_head'] );
+		$clean['opt_lazy_images']       = ! empty( $input['opt_lazy_images'] );
+		$clean['opt_heartbeat_control'] = ! empty( $input['opt_heartbeat_control'] );
+		$clean['heartbeat_interval']    = isset( $input['heartbeat_interval'] ) ? min( 300, max( 15, (int) $input['heartbeat_interval'] ) ) : $defaults['heartbeat_interval'];
+		$clean['opt_limit_revisions']   = ! empty( $input['opt_limit_revisions'] );
+		$clean['revisions_to_keep']     = isset( $input['revisions_to_keep'] ) ? min( 100, max( 0, (int) $input['revisions_to_keep'] ) ) : $defaults['revisions_to_keep'];
+		$clean['opt_jpeg_quality']      = ! empty( $input['opt_jpeg_quality'] );
+		$clean['jpeg_quality']          = isset( $input['jpeg_quality'] ) ? min( 92, max( 60, (int) $input['jpeg_quality'] ) ) : $defaults['jpeg_quality'];
+		$clean['opt_disable_xmlrpc']    = ! empty( $input['opt_disable_xmlrpc'] );
 
 		return $clean;
 	}

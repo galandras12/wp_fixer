@@ -32,6 +32,7 @@ class Fixer_Core {
 		Fixer_Http_Guard::init();
 		Fixer_Mail_Queue::init();
 		Fixer_Hook_Deferral::init();
+		Fixer_Optimizer::init();
 
 		// Needs to run after every other plugin has registered its own hooks,
 		// so it can see (and, for the deferral engine, safely remove) them.

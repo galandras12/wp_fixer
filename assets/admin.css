@@ -5,3 +5,27 @@
 .fixer-discovery-table code {
 	margin-left: 0.4em;
 }
+
+.fixer-status {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.fixer-status-ok {
+	background: #d5f2df;
+	color: #1a6b34;
+}
+
+.fixer-status-warn {
+	background: #fdf2d0;
+	color: #8a6100;
+}
+
+.fixer-status-bad {
+	background: #fbdcdc;
+	color: #8a1f1f;
+}
