@@ -1,0 +1,7 @@
+.fixer-wrap .fixer-summary p {
+	margin: 0.5em 0;
+}
+
+.fixer-discovery-table code {
+	margin-left: 0.4em;
+}
