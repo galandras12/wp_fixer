@@ -39,6 +39,19 @@ class Fixer_Settings {
 
 			'opt_suppress_deprecated_noise' => true,
 			'deprecated_suppress_patterns'  => array( 'login-with-ajax/assets/php/color.php' ),
+
+			'object_cache_backend'  => 'none',
+			'object_cache_host'     => '127.0.0.1',
+			'object_cache_port'     => 6379,
+			'object_cache_password' => '',
+			'object_cache_database' => '',
+			'object_cache_prefix'   => 'fixer',
+
+			'opt_session_reset_button' => true,
+
+			'opt_trim_login_assets'    => false,
+			'login_trim_slugs'         => array(),
+			'opt_login_resource_hints' => true,
 		);
 	}
 
@@ -120,6 +133,28 @@ class Fixer_Settings {
 				if ( '' !== $item ) {
 					$clean['deprecated_suppress_patterns'][] = $item;
 				}
+			}
+		}
+
+		$clean['object_cache_backend'] = in_array( $input['object_cache_backend'] ?? '', array( 'none', 'redis', 'memcached' ), true ) ? $input['object_cache_backend'] : $defaults['object_cache_backend'];
+		$clean['object_cache_host']     = isset( $input['object_cache_host'] ) ? sanitize_text_field( $input['object_cache_host'] ) : $defaults['object_cache_host'];
+		$clean['object_cache_port']     = isset( $input['object_cache_port'] ) ? min( 65535, max( 1, (int) $input['object_cache_port'] ) ) : $defaults['object_cache_port'];
+		$clean['object_cache_password'] = isset( $input['object_cache_password'] ) ? (string) $input['object_cache_password'] : '';
+		$clean['object_cache_database'] = isset( $input['object_cache_database'] ) && '' !== $input['object_cache_database'] ? (string) (int) $input['object_cache_database'] : '';
+		$clean['object_cache_prefix']   = isset( $input['object_cache_prefix'] ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', $input['object_cache_prefix'] ) : $defaults['object_cache_prefix'];
+		if ( '' === $clean['object_cache_prefix'] ) {
+			$clean['object_cache_prefix'] = $defaults['object_cache_prefix'];
+		}
+
+		$clean['opt_session_reset_button'] = ! empty( $input['opt_session_reset_button'] );
+
+		$clean['opt_trim_login_assets']    = ! empty( $input['opt_trim_login_assets'] );
+		$clean['opt_login_resource_hints'] = ! empty( $input['opt_login_resource_hints'] );
+
+		$clean['login_trim_slugs'] = array();
+		if ( ! empty( $input['login_trim_slugs'] ) && is_array( $input['login_trim_slugs'] ) ) {
+			foreach ( $input['login_trim_slugs'] as $slug ) {
+				$clean['login_trim_slugs'][] = sanitize_key( $slug );
 			}
 		}
 

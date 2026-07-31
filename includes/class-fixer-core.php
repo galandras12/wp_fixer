@@ -12,9 +12,13 @@ class Fixer_Core {
 	public static function init() {
 		add_action( 'plugins_loaded', array( __CLASS__, 'load' ), 1 );
 
-		// Admin UI must always be available, even with everything else disabled.
+		// Admin UI (and the object cache enable/disable/test actions) must
+		// always be available, even with the master switch off - the object
+		// cache drop-in, once installed, also keeps working independently of
+		// it (it loads before any plugin, Fixer included).
 		if ( is_admin() ) {
 			Fixer_Admin_Page::init();
+			Fixer_Object_Cache::init();
 		}
 	}
 
@@ -34,6 +38,8 @@ class Fixer_Core {
 		Fixer_Hook_Deferral::init();
 		Fixer_Optimizer::init();
 		Fixer_Error_Filter::init();
+		Fixer_Session_Reset::init();
+		Fixer_Login_Speed::init();
 
 		// Needs to run after every other plugin has registered its own hooks,
 		// so it can see (and, for the deferral engine, safely remove) them.

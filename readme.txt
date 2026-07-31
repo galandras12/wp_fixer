@@ -4,7 +4,7 @@ Tags: login, performance, wp-login, smtp, debug
 Requires at least: 5.7
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,6 +52,23 @@ A Beállítások → Fixer oldalon két további fül is található:
   fájlnév/üzenet mintákra illeszkedő bejegyzéseket némítja el, minden más hibát és figyelmeztetést
   változatlanul hagy.
 
+Két új fül:
+
+* **Objektum-gyorsítótár** – állandó Redis/Memcached objektum-gyorsítótár teljes admin
+  felülettel: kapcsolódási adatok (host, port, jelszó, adatbázis-index, kulcs-előtag),
+  "Kapcsolat tesztelése" gomb élő szerverinfóval, "Bekapcsolás"/"Kikapcsolás" (egy kattintással
+  visszavonható), és "Gyorsítótár ürítése". A bekapcsolás egy önálló, biztonságos drop-in fájlt
+  (`wp-content/object-cache.php`) hoz létre, ami Redis/Memcached hiányában vagy hibája esetén
+  automatikusan, hiba nélkül visszaesik a WordPress beépített viselkedésére - sosem a wp-config.php-t
+  módosítja.
+* A "Bejelentkezés" fülön egy **"beragadt a bejelentkezés?" gomb** jelenik meg a bejelentkező
+  űrlap alatt: törli a böngésző sütijeit, local/session storage-át és service worker regisztrációit,
+  a szerver oldalon pedig a bejelentkezési sütiket és - ha van - a látogató PHP munkamenetét is.
+* A "Teljesítmény" fülön új szakasz: a bejelentkező oldalon (wp-login.php) ténylegesen betöltött
+  plugin-szkriptek/stílusok automatikus felismerése valós látogatásokból, egyenkénti kikapcsolási
+  lehetőséggel csak a bejelentkező oldalra vonatkozóan, plusz preconnect erőforrás-javaslatok a
+  megmaradó külső fájlokhoz.
+
 == Installation ==
 
 1. Töltsd fel a plugin mappáját a `/wp-content/plugins/fixer` könyvtárba.
@@ -61,6 +78,11 @@ A Beállítások → Fixer oldalon két további fül is található:
    háttérbe tétele" listában válaszd ki, melyik plugin(oka)t szeretnéd háttérbe tenni.
 
 == Changelog ==
+
+= 1.4.0 =
+* Új "Objektum-gyorsítótár" fül: teljes admin felület állandó Redis/Memcached gyorsítótárhoz (kapcsolódási adatok, kapcsolat-teszt, be/kikapcsolás, ürítés), biztonságos, önmagában is hibatűrő drop-in fájllal - sosem nyúl a wp-config.php-hoz.
+* Új "beragadt a bejelentkezés?" gomb a bejelentkező oldalon: böngésző- és szerveroldali munkamenet-/süti-tisztítás egy kattintással.
+* Új, valós látogatásokból tanuló funkció: a bejelentkező oldalon felesleges plugin-szkriptek/stílusok egyenkénti kikapcsolása, plusz preconnect javaslatok a megmaradó külső fájlokhoz.
 
 = 1.3.0 =
 * Új beállítás: konkrét, ismert "Deprecated" hibaüzeneteket elnémító, mintaillesztésen alapuló hibaszűrő (alapból a Login With Ajax `color.php`-jának PHP 8.1+ figyelmeztetéseire állítva). Csak az egyező üzeneteket némítja el, minden más hiba/figyelmeztetés - és bármelyik másik plugin saját hibakezelője - érintetlen marad.

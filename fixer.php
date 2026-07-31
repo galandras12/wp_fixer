@@ -3,7 +3,7 @@
  * Plugin Name:       Fixer
  * Plugin URI:        https://github.com/galandras12/wp_fixer
  * Description:       Megszünteti a bejelentkezési képernyő elhúzódó beragadását, szerver diagnosztikát ad (memória, PHP limitek, OPcache, adatbázis), és egyenként ki/be kapcsolható optimalizálásokkal gyorsítja az oldal betöltését. Beállítások → Fixer.
- * Version:           1.3.0
+ * Version:           1.4.0
  * Requires at least: 5.7
  * Requires PHP:      7.4
  * Author:            Fixer
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FIXER_VERSION', '1.3.0' );
+define( 'FIXER_VERSION', '1.4.0' );
 define( 'FIXER_FILE', __FILE__ );
 define( 'FIXER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'FIXER_URL', plugin_dir_url( __FILE__ ) );
@@ -34,6 +34,9 @@ require_once FIXER_DIR . 'includes/class-fixer-hook-deferral.php';
 require_once FIXER_DIR . 'includes/class-fixer-server-info.php';
 require_once FIXER_DIR . 'includes/class-fixer-optimizer.php';
 require_once FIXER_DIR . 'includes/class-fixer-error-filter.php';
+require_once FIXER_DIR . 'includes/class-fixer-object-cache.php';
+require_once FIXER_DIR . 'includes/class-fixer-session-reset.php';
+require_once FIXER_DIR . 'includes/class-fixer-login-speed.php';
 require_once FIXER_DIR . 'includes/class-fixer-admin-page.php';
 require_once FIXER_DIR . 'includes/class-fixer-core.php';
 

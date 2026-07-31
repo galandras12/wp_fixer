@@ -90,6 +90,7 @@ $status_labels = array(
 		<a href="<?php echo esc_url( add_query_arg( 'tab', 'login', $base_url ) ); ?>" class="nav-tab <?php echo 'login' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Bejelentkezés', 'fixer' ); ?></a>
 		<a href="<?php echo esc_url( add_query_arg( 'tab', 'server', $base_url ) ); ?>" class="nav-tab <?php echo 'server' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Szerver diagnosztika', 'fixer' ); ?></a>
 		<a href="<?php echo esc_url( add_query_arg( 'tab', 'performance', $base_url ) ); ?>" class="nav-tab <?php echo 'performance' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Teljesítmény', 'fixer' ); ?></a>
+		<a href="<?php echo esc_url( add_query_arg( 'tab', 'object-cache', $base_url ) ); ?>" class="nav-tab <?php echo 'object-cache' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Objektum-gyorsítótár', 'fixer' ); ?></a>
 	</h2>
 
 	<?php if ( 'login' === $tab && $latest ) : ?>
@@ -144,6 +145,19 @@ $status_labels = array(
 						<label>
 							<input type="checkbox" name="fixer_options[master_enabled]" value="1" <?php checked( $opts['master_enabled'] ); ?> />
 							<?php esc_html_e( 'Ha ez ki van kapcsolva, a plugin egyáltalán nem avatkozik be semmibe (a Teljesítmény fülön lévő optimalizálások is leállnak).', 'fixer' ); ?>
+						</label>
+					</td>
+				</tr>
+			</table>
+
+			<h2 class="title"><?php esc_html_e( 'Beragadt bejelentkezés - munkamenet törlő gomb', 'fixer' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Bekapcsolva', 'fixer' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="fixer_options[opt_session_reset_button]" value="1" <?php checked( $opts['opt_session_reset_button'] ); ?> />
+							<?php esc_html_e( 'Egy kis linket jelenít meg a bejelentkező űrlap alatt ("Beragadt a bejelentkezés?"), amire kattintva a látogató böngészője törli a süti-ket, a local/session storage-ot és a szolgáltatás-workereket, a szerver pedig törli a bejelentkezési sütiket és - ha van - a látogató PHP munkamenetét (session). Ez pont azt az esetet oldja meg, amikor egy korábbi beragadt kérés miatt a böngésző egy "beragadt" munkamenet-azonosítót küldözget.', 'fixer' ); ?>
 						</label>
 					</td>
 				</tr>
@@ -401,10 +415,189 @@ $status_labels = array(
 				</tr>
 			</table>
 
+			<h2 class="title"><?php esc_html_e( 'Bejelentkező oldal saját betöltésének gyorsítása', 'fixer' ); ?></h2>
+			<p><?php esc_html_e( 'A wp-login.php egy külön, egyszerű oldal - de sok plugin ugyanazt a teljes szkript/stílus készletet tölti be rá is, mint a többi oldalra. Ez a rész azt mutatja, mely pluginok töltenek be saját fájlokat a bejelentkező oldalon (a valós látogatásokból gyűjtve), és lehetővé teszi az egyenkénti kikapcsolásukat - kizárólag itt, a bejelentkező oldalon, a többi oldalon változatlanul betöltődnek.', 'fixer' ); ?></p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Kiválasztott pluginok kihagyása a bejelentkező oldalon', 'fixer' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="fixer_options[opt_trim_login_assets]" value="1" <?php checked( $opts['opt_trim_login_assets'] ); ?> />
+							<?php esc_html_e( 'Engedélyezi az alább kiválasztott pluginok szkriptjeinek/stílusainak kihagyását a bejelentkező oldalon.', 'fixer' ); ?>
+						</label>
+						<p class="description"><?php esc_html_e( 'Figyelem: ha egy bejelentkező oldalt vizuálisan testreszabó pluginnál (pl. LoginPress) kapcsolod ki, az elveszítheti a saját stílusát a bejelentkező oldalon. Csak olyan pluginoknál használd, amikről tudod, hogy nincs rájuk szükség a bejelentkezéshez.', 'fixer' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Preconnect erőforrás-javaslatok', 'fixer' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="fixer_options[opt_login_resource_hints]" value="1" <?php checked( $opts['opt_login_resource_hints'] ); ?> />
+							<?php esc_html_e( 'A bejelentkező oldalon megmaradó, külső domainről betöltött fájlokhoz automatikusan preconnect javaslatokat ad a böngészőnek, hogy hamarabb felépüljön velük a kapcsolat.', 'fixer' ); ?>
+						</label>
+					</td>
+				</tr>
+			</table>
+
+			<?php if ( empty( $login_assets_seen ) ) : ?>
+				<p><em><?php esc_html_e( 'Egyelőre nincs megfigyelt adat - ez a lista akkor töltődik fel, amikor valaki megnyitja a bejelentkező oldalt.', 'fixer' ); ?></em></p>
+			<?php else : ?>
+				<table class="widefat striped fixer-discovery-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Kihagyás a bejelentkező oldalon', 'fixer' ); ?></th>
+							<th><?php esc_html_e( 'Plugin', 'fixer' ); ?></th>
+							<th><?php esc_html_e( 'Betöltött fájlok', 'fixer' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+					<?php foreach ( $login_assets_seen as $slug => $info ) : ?>
+						<tr>
+							<td>
+								<input type="checkbox" name="fixer_options[login_trim_slugs][]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $opts['login_trim_slugs'], true ) ); ?> />
+							</td>
+							<td><?php echo esc_html( $info['label'] ); ?> <code><?php echo esc_html( $slug ); ?></code></td>
+							<td><?php echo esc_html( implode( ', ', array_keys( $info['handles'] ) ) ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+
 		</div>
 
-		<?php submit_button( __( 'Beállítások mentése', 'fixer' ) ); ?>
+		<div <?php echo 'object-cache' === $tab ? '' : 'style="display:none;"'; ?>>
+
+			<h2 class="title"><?php esc_html_e( 'Kapcsolódási adatok', 'fixer' ); ?></h2>
+			<p><?php esc_html_e( 'Állandó objektum-gyorsítótár (Redis vagy Memcached) csökkenti az adatbázis-terhelést azzal, hogy a gyakran lekérdezett adatokat a PHP-kéréseken túl is megőrzi. Ehhez a szervernek telepítve kell lennie a megfelelő PHP kiterjesztésnek, és futnia kell egy Redis vagy Memcached szolgáltatásnak - ha ez nincs meg, a "Kapcsolat tesztelése" gomb egyértelműen jelzi.', 'fixer' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Fontos: a bekapcsolás egy wp-content/object-cache.php fájlt hoz létre, ami a Fixer plugintól függetlenül, minden WordPress-kérés legelején fut le. Ha a szerver nem éri el a Redis/Memcached szolgáltatást, ez a fájl automatikusan, hiba nélkül visszaesik a WordPress beépített viselkedésére. Ha kikapcsolod vagy törlöd a Fixer plugint, előbb kattints a "Kikapcsolás" gombra, hogy ez a fájl is eltávolításra kerüljön.', 'fixer' ); ?></p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="fixer_oc_backend"><?php esc_html_e( 'Háttértár', 'fixer' ); ?></label></th>
+					<td>
+						<select id="fixer_oc_backend" name="fixer_options[object_cache_backend]">
+							<option value="none" <?php selected( $opts['object_cache_backend'], 'none' ); ?>><?php esc_html_e( 'Nincs (alapértelmezett WordPress gyorsítótár)', 'fixer' ); ?></option>
+							<option value="redis" <?php selected( $opts['object_cache_backend'], 'redis' ); ?>>Redis</option>
+							<option value="memcached" <?php selected( $opts['object_cache_backend'], 'memcached' ); ?>>Memcached</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="fixer_oc_host"><?php esc_html_e( 'Host', 'fixer' ); ?></label></th>
+					<td><input type="text" id="fixer_oc_host" name="fixer_options[object_cache_host]" value="<?php echo esc_attr( $opts['object_cache_host'] ); ?>" class="regular-text" placeholder="127.0.0.1" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="fixer_oc_port"><?php esc_html_e( 'Port', 'fixer' ); ?></label></th>
+					<td><input type="number" id="fixer_oc_port" name="fixer_options[object_cache_port]" value="<?php echo esc_attr( $opts['object_cache_port'] ); ?>" class="small-text" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="fixer_oc_password"><?php esc_html_e( 'Jelszó (ha van)', 'fixer' ); ?></label></th>
+					<td><input type="password" id="fixer_oc_password" name="fixer_options[object_cache_password]" value="<?php echo esc_attr( $opts['object_cache_password'] ); ?>" class="regular-text" autocomplete="new-password" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="fixer_oc_database"><?php esc_html_e( 'Adatbázis index (csak Redis)', 'fixer' ); ?></label></th>
+					<td><input type="number" id="fixer_oc_database" name="fixer_options[object_cache_database]" value="<?php echo esc_attr( $opts['object_cache_database'] ); ?>" class="small-text" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="fixer_oc_prefix"><?php esc_html_e( 'Kulcs-előtag', 'fixer' ); ?></label></th>
+					<td>
+						<input type="text" id="fixer_oc_prefix" name="fixer_options[object_cache_prefix]" value="<?php echo esc_attr( $opts['object_cache_prefix'] ); ?>" class="regular-text" />
+						<p class="description"><?php esc_html_e( 'Hasznos, ha ugyanazt a Redis/Memcached szervert több oldal is használja - így nem keverednek össze a kulcsok.', 'fixer' ); ?></p>
+					</td>
+				</tr>
+			</table>
+
+		</div>
+
+		<?php if ( 'object-cache' !== $tab ) : ?>
+			<?php submit_button( __( 'Beállítások mentése', 'fixer' ) ); ?>
+		<?php endif; ?>
 	</form>
+
+	<?php if ( 'object-cache' === $tab ) : ?>
+		<hr />
+
+		<?php if ( $oc_message ) : ?>
+			<div class="notice notice-<?php echo 'error' === $oc_message['type'] ? 'error' : 'success'; ?> is-dismissible"><p><?php echo esc_html( $oc_message['message'] ); ?></p></div>
+		<?php endif; ?>
+
+		<h2><?php esc_html_e( 'Állapot', 'fixer' ); ?></h2>
+		<table class="widefat striped" style="max-width:700px;">
+			<tbody>
+				<tr>
+					<td><strong><?php esc_html_e( 'Drop-in fájl (wp-content/object-cache.php)', 'fixer' ); ?></strong></td>
+					<td>
+						<?php if ( 'missing' === $oc_status ) : ?>
+							<span class="fixer-status fixer-status-warn"><?php esc_html_e( 'nincs telepítve', 'fixer' ); ?></span>
+						<?php elseif ( 'ours' === $oc_status ) : ?>
+							<span class="fixer-status fixer-status-ok"><?php esc_html_e( 'a Fixer által telepítve', 'fixer' ); ?></span>
+						<?php else : ?>
+							<span class="fixer-status fixer-status-bad"><?php esc_html_e( 'egy másik eszköz drop-in fájlja aktív', 'fixer' ); ?></span>
+						<?php endif; ?>
+					</td>
+				</tr>
+				<?php if ( 'ours' === $oc_status ) : ?>
+				<tr>
+					<td><strong><?php esc_html_e( 'Élő kapcsolat ennél a kérésnél', 'fixer' ); ?></strong></td>
+					<td>
+						<?php if ( $oc_connected ) : ?>
+							<span class="fixer-status fixer-status-ok"><?php esc_html_e( 'csatlakozva', 'fixer' ); ?></span>
+						<?php else : ?>
+							<span class="fixer-status fixer-status-warn"><?php esc_html_e( 'nincs kapcsolat - a WordPress most a beépített gyorsítótárra esik vissza', 'fixer' ); ?></span>
+						<?php endif; ?>
+					</td>
+				</tr>
+				<?php endif; ?>
+			</tbody>
+		</table>
+
+		<p class="fixer-oc-actions" style="margin-top:1em;">
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:.5em;">
+				<?php wp_nonce_field( 'fixer_oc_test' ); ?>
+				<input type="hidden" name="action" value="fixer_oc_test" />
+				<input type="hidden" name="object_cache_backend" value="<?php echo esc_attr( $opts['object_cache_backend'] ); ?>" />
+				<input type="hidden" name="object_cache_host" value="<?php echo esc_attr( $opts['object_cache_host'] ); ?>" />
+				<input type="hidden" name="object_cache_port" value="<?php echo esc_attr( $opts['object_cache_port'] ); ?>" />
+				<input type="hidden" name="object_cache_password" value="<?php echo esc_attr( $opts['object_cache_password'] ); ?>" />
+				<input type="hidden" name="object_cache_database" value="<?php echo esc_attr( $opts['object_cache_database'] ); ?>" />
+				<?php submit_button( __( 'Kapcsolat tesztelése (mentett adatokkal)', 'fixer' ), 'secondary', 'submit', false ); ?>
+			</form>
+
+			<?php if ( 'ours' !== $oc_status ) : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:.5em;">
+					<?php wp_nonce_field( 'fixer_oc_enable' ); ?>
+					<input type="hidden" name="action" value="fixer_oc_enable" />
+					<?php submit_button( __( 'Bekapcsolás', 'fixer' ), 'primary', 'submit', false ); ?>
+				</form>
+			<?php else : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:.5em;">
+					<?php wp_nonce_field( 'fixer_oc_disable' ); ?>
+					<input type="hidden" name="action" value="fixer_oc_disable" />
+					<?php submit_button( __( 'Kikapcsolás', 'fixer' ), 'delete', 'submit', false ); ?>
+				</form>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;">
+					<?php wp_nonce_field( 'fixer_oc_flush' ); ?>
+					<input type="hidden" name="action" value="fixer_oc_flush" />
+					<?php submit_button( __( 'Gyorsítótár ürítése', 'fixer' ), 'secondary', 'submit', false ); ?>
+				</form>
+			<?php endif; ?>
+		</p>
+		<p class="description"><?php esc_html_e( 'A "Kapcsolat tesztelése" a mentett adatokkal próbál kapcsolódni - előbb mentsd a fenti beállításokat. A "Bekapcsolás" hozza létre a wp-content/object-cache.php fájlt; ha ez sikertelen (pl. jogosultsági okból), a WordPress változatlanul, hiba nélkül a beépített gyorsítótárral működik tovább. A "Kikapcsolás" egyetlen kattintással törli ezt a fájlt.', 'fixer' ); ?></p>
+
+		<?php if ( $oc_test_result ) : ?>
+			<h2><?php esc_html_e( 'Teszt eredménye', 'fixer' ); ?></h2>
+			<div class="notice notice-<?php echo $oc_test_result['success'] ? 'success' : 'error'; ?>" style="max-width:700px;">
+				<p><?php echo esc_html( $oc_test_result['message'] ); ?></p>
+				<?php if ( ! empty( $oc_test_result['info'] ) ) : ?>
+					<ul>
+						<?php foreach ( $oc_test_result['info'] as $label => $value ) : ?>
+							<li><strong><?php echo esc_html( $label ); ?>:</strong> <?php echo esc_html( $value ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
+	<?php endif; ?>
 	<?php endif; ?>
 
 	<?php if ( 'login' === $tab ) : ?>
