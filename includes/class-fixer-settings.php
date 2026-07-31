@@ -36,6 +36,9 @@ class Fixer_Settings {
 			'opt_jpeg_quality'      => false,
 			'jpeg_quality'          => 82,
 			'opt_disable_xmlrpc'    => false,
+
+			'opt_suppress_deprecated_noise' => true,
+			'deprecated_suppress_patterns'  => array( 'login-with-ajax/assets/php/color.php' ),
 		);
 	}
 
@@ -106,6 +109,19 @@ class Fixer_Settings {
 		$clean['opt_jpeg_quality']      = ! empty( $input['opt_jpeg_quality'] );
 		$clean['jpeg_quality']          = isset( $input['jpeg_quality'] ) ? min( 92, max( 60, (int) $input['jpeg_quality'] ) ) : $defaults['jpeg_quality'];
 		$clean['opt_disable_xmlrpc']    = ! empty( $input['opt_disable_xmlrpc'] );
+
+		$clean['opt_suppress_deprecated_noise'] = ! empty( $input['opt_suppress_deprecated_noise'] );
+
+		$clean['deprecated_suppress_patterns'] = array();
+		if ( ! empty( $input['deprecated_suppress_patterns'] ) ) {
+			$raw = is_array( $input['deprecated_suppress_patterns'] ) ? $input['deprecated_suppress_patterns'] : preg_split( '/[\r\n]+/', (string) $input['deprecated_suppress_patterns'] );
+			foreach ( $raw as $item ) {
+				$item = trim( sanitize_text_field( $item ) );
+				if ( '' !== $item ) {
+					$clean['deprecated_suppress_patterns'][] = $item;
+				}
+			}
+		}
 
 		return $clean;
 	}

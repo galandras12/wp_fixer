@@ -4,7 +4,7 @@ Tags: login, performance, wp-login, smtp, debug
 Requires at least: 5.7
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,12 @@ A Beállítások → Fixer oldalon két további fül is található:
   ki/be kapcsolható optimalizálások: emoji-szkriptek és felesleges `<head>` elemek eltávolítása,
   képek lusta betöltése, új feltöltésű JPEG képek tömörítése, a Heartbeat API ritkítása/kikapcsolása
   a látogatói oldalakon, bejegyzés-revíziók korlátozása, és az XML-RPC letiltása.
+* A "Teljesítmény" fülön egy "Ismert plugin-hibaüzenetek elnémítása" beállítás is található:
+  konkrét, ártalmatlan, de zajos "Deprecated" hibaüzeneteket némít el a hibalogból (pl. a Login
+  With Ajax `color.php` fájljának PHP 8.1+ alatti figyelmeztetéseit), anélkül, hogy a plugin
+  fájljaihoz hozzá kellene nyúlni - így egy pluginfrissítés sem írja felül. Csak a beállított
+  fájlnév/üzenet mintákra illeszkedő bejegyzéseket némítja el, minden más hibát és figyelmeztetést
+  változatlanul hagy.
 
 == Installation ==
 
@@ -55,6 +61,9 @@ A Beállítások → Fixer oldalon két további fül is található:
    háttérbe tétele" listában válaszd ki, melyik plugin(oka)t szeretnéd háttérbe tenni.
 
 == Changelog ==
+
+= 1.3.0 =
+* Új beállítás: konkrét, ismert "Deprecated" hibaüzeneteket elnémító, mintaillesztésen alapuló hibaszűrő (alapból a Login With Ajax `color.php`-jának PHP 8.1+ figyelmeztetéseire állítva). Csak az egyező üzeneteket némítja el, minden más hiba/figyelmeztetés - és bármelyik másik plugin saját hibakezelője - érintetlen marad.
 
 = 1.2.0 =
 * Új "Szerver diagnosztika" fül: PHP memória/idő limitek, OPcache, objektum-gyorsítótár, autoload méret és legnagyobb bejegyzések, adatbázis-tábla méretek, cron- és tranziens-számláló, lejárt tranzitensek törlése gombbal.

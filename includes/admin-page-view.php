@@ -380,6 +380,27 @@ $status_labels = array(
 				</tr>
 			</table>
 
+			<h2 class="title"><?php esc_html_e( 'Ismert plugin-hibaüzenetek elnémítása', 'fixer' ); ?></h2>
+			<p><?php esc_html_e( 'Néhány plugin ártalmatlan, de zajos "Deprecated" hibaüzeneteket ír a hibalogba minden oldalbetöltésnél (pl. a Login With Ajax color.php fájlja PHP 8.1+ alatt). Ez nem a WordPress vagy a Fixer hibája, hanem a pluginban lévő elavult kódírási mód - a viselkedést nem befolyásolja, csak a naplót szennyezi. Az alábbi beállítás ezeket a konkrét, egyezőnek jelölt üzeneteket kiszűri a hibalogból, anélkül, hogy a plugin fájljaihoz hozzá kellene nyúlni (így egy pluginfrissítés sem írja felül).', 'fixer' ); ?></p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Bekapcsolva', 'fixer' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="fixer_options[opt_suppress_deprecated_noise]" value="1" <?php checked( $opts['opt_suppress_deprecated_noise'] ); ?> />
+							<?php esc_html_e( 'Csak a lent felsorolt fájlnév/üzenet mintákra illeszkedő "Deprecated" bejegyzéseket némítja el - minden más hiba, figyelmeztetés és a bejelentkezés/adatvédelem ettől teljesen érintetlen marad.', 'fixer' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="fixer_deprecated_patterns"><?php esc_html_e( 'Elnémítandó fájl- vagy üzenet-részletek', 'fixer' ); ?></label></th>
+					<td>
+						<textarea id="fixer_deprecated_patterns" name="fixer_options[deprecated_suppress_patterns]" rows="3" class="large-text code"><?php echo esc_textarea( implode( "\n", $opts['deprecated_suppress_patterns'] ) ); ?></textarea>
+						<p class="description"><?php esc_html_e( 'Soronként egy részlet a fájlnévből vagy a hibaüzenetből. Alapból a Login With Ajax color.php-jának ismert deprecation üzenetei vannak beállítva.', 'fixer' ); ?></p>
+					</td>
+				</tr>
+			</table>
+
 		</div>
 
 		<?php submit_button( __( 'Beállítások mentése', 'fixer' ) ); ?>
