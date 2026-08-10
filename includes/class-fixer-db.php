@@ -42,15 +42,42 @@ class Fixer_DB {
 		add_option( 'fixer_options', Fixer_Settings::defaults() );
 	}
 
+	/**
+	 * Speed-test samples are pruned separately (see prune_type()) with their
+	 * own small caps, so a burst of admin page views can never crowd the
+	 * regular login-diagnostic rows out of the shared retention budget.
+	 */
+	const SPEEDTEST_TYPES = array( 'speedtest_login', 'speedtest_pageload' );
+
 	public static function prune( $keep = 500 ) {
 		global $wpdb;
-		$table = self::table_name();
-		$keep  = max( 50, (int) $keep );
+		$table       = self::table_name();
+		$keep        = max( 50, (int) $keep );
+		$placeholders = implode( ',', array_fill( 0, count( self::SPEEDTEST_TYPES ), '%s' ) );
 
-		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
+		$count = (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE type NOT IN ({$placeholders})", self::SPEEDTEST_TYPES ) // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders
+		);
 		if ( $count > $keep ) {
 			$excess = $count - $keep;
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} ORDER BY id ASC LIMIT %d", $excess ) );
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$table} WHERE type NOT IN ({$placeholders}) ORDER BY id ASC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders
+					array_merge( self::SPEEDTEST_TYPES, array( $excess ) )
+				)
+			);
+		}
+	}
+
+	public static function prune_type( $type, $keep ) {
+		global $wpdb;
+		$table = self::table_name();
+		$keep  = max( 10, (int) $keep );
+
+		$count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE type = %s", $type ) );
+		if ( $count > $keep ) {
+			$excess = $count - $keep;
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE type = %s ORDER BY id ASC LIMIT %d", $type, $excess ) );
 		}
 	}
 }

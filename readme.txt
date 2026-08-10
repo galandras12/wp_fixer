@@ -4,7 +4,7 @@ Tags: login, performance, wp-login, smtp, debug
 Requires at least: 5.7
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,10 @@ Két új fül:
   plugin-szkriptek/stílusok automatikus felismerése valós látogatásokból, egyenkénti kikapcsolási
   lehetőséggel csak a bejelentkező oldalra vonatkozóan, plusz preconnect erőforrás-javaslatok a
   megmaradó külső fájlokhoz.
+* Új **"Sebességteszt"** fül (alapból kikapcsolva): bekapcsolva külön grafikonon méri az
+  adminisztrátori jogú felhasználók bejelentkezési idejét, és a bejelentkezés után általuk
+  meglátogatott oldalak betöltési idejét - csak "manage_options" jogosultságú felhasználókra
+  vonatkozik, senki más látogatását nem méri.
 
 == Installation ==
 
@@ -78,6 +82,11 @@ Két új fül:
    háttérbe tétele" listában válaszd ki, melyik plugin(oka)t szeretnéd háttérbe tenni.
 
 == Changelog ==
+
+= 1.5.0 =
+* Hibajavítás: a diagnosztikai időmérés (profiler) a Pluginok háttérbe tétele funkció ELŐTT futott le, emiatt az utóbbi soha nem tudta helyesen azonosítani, melyik pluginhoz tartozik egy hook - így a bejelölt pluginok háttérbe tétele valójában nem történt meg. Most a sorrend javítva.
+* Új diagnosztika alapján (valós bejelentkezési napló elemzése): a Wordfence Security, Ultimate Member és Activity Log `wp_login`-hoz kötött funkciói azonosítva lettek fő lassító tényezőként - ezek a "Pluginok háttérbe tétele bejelentkezéskor" listában immár ténylegesen kikapcsolhatók/háttérbe tehetők.
+* Új "Sebességteszt" fül (alapból kikapcsolva): grafikus (SVG) diagram az adminisztrátori bejelentkezési időkről és az admin felhasználók által látogatott oldalak betöltési idejéről, külön, korlátozott méretű adattárolással, hogy ne terhelje túl a diagnosztikai naplót.
 
 = 1.4.0 =
 * Új "Objektum-gyorsítótár" fül: teljes admin felület állandó Redis/Memcached gyorsítótárhoz (kapcsolódási adatok, kapcsolat-teszt, be/kikapcsolás, ürítés), biztonságos, önmagában is hibatűrő drop-in fájllal - sosem nyúl a wp-config.php-hoz.

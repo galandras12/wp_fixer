@@ -52,6 +52,8 @@ class Fixer_Settings {
 			'opt_trim_login_assets'    => false,
 			'login_trim_slugs'         => array(),
 			'opt_login_resource_hints' => true,
+
+			'opt_speed_test_enabled' => false,
 		);
 	}
 
@@ -157,6 +159,8 @@ class Fixer_Settings {
 				$clean['login_trim_slugs'][] = sanitize_key( $slug );
 			}
 		}
+
+		$clean['opt_speed_test_enabled'] = ! empty( $input['opt_speed_test_enabled'] );
 
 		return $clean;
 	}

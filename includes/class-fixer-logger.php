@@ -59,6 +59,10 @@ class Fixer_Logger {
 		);
 	}
 
+	public static function log_speedtest( $type, $ms, $detail ) {
+		self::add( $type, '', '', 'speedtest', (string) $detail, round( $ms, 1 ) );
+	}
+
 	public static function log_hook_deferred( $hook, $desc ) {
 		self::add(
 			'hook_deferred',

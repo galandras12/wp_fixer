@@ -96,6 +96,7 @@ $status_labels = array(
 		<a href="<?php echo esc_url( add_query_arg( 'tab', 'server', $base_url ) ); ?>" class="nav-tab <?php echo 'server' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Szerver diagnosztika', 'fixer' ); ?></a>
 		<a href="<?php echo esc_url( add_query_arg( 'tab', 'performance', $base_url ) ); ?>" class="nav-tab <?php echo 'performance' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Teljesítmény', 'fixer' ); ?></a>
 		<a href="<?php echo esc_url( add_query_arg( 'tab', 'object-cache', $base_url ) ); ?>" class="nav-tab <?php echo 'object-cache' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Objektum-gyorsítótár', 'fixer' ); ?></a>
+		<a href="<?php echo esc_url( add_query_arg( 'tab', 'speed-test', $base_url ) ); ?>" class="nav-tab <?php echo 'speed-test' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sebességteszt', 'fixer' ); ?></a>
 	</h2>
 
 	<?php if ( 'login' === $tab && $latest ) : ?>
@@ -519,9 +520,25 @@ $status_labels = array(
 
 		</div>
 
-		<?php if ( 'object-cache' !== $tab ) : ?>
-			<?php submit_button( __( 'Beállítások mentése', 'fixer' ) ); ?>
-		<?php endif; ?>
+		<div <?php echo 'speed-test' === $tab ? '' : 'style="display:none;"'; ?>>
+
+			<h2 class="title"><?php esc_html_e( 'Grafikus sebességteszt', 'fixer' ); ?></h2>
+			<p><?php esc_html_e( 'Bekapcsolva külön méri és grafikonon mutatja, hogy (1) az adminisztrátori jogú felhasználók mennyi idő alatt jelentkeznek be, és (2) az általuk utána meglátogatott oldalak mennyi idő alatt töltődnek be. Alapértelmezetten kikapcsolva van.', 'fixer' ); ?></p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Bekapcsolva', 'fixer' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="fixer_options[opt_speed_test_enabled]" value="1" <?php checked( $opts['opt_speed_test_enabled'] ); ?> />
+							<?php esc_html_e( 'Csak a "manage_options" jogosultsággal rendelkező (adminisztrátori) felhasználókra vonatkozik - más látogatók/szerkesztők bejelentkezését és oldalbetöltéseit nem méri.', 'fixer' ); ?>
+						</label>
+					</td>
+				</tr>
+			</table>
+
+		</div>
+
+		<?php submit_button( __( 'Beállítások mentése', 'fixer' ) ); ?>
 	</form>
 
 	<?php if ( 'object-cache' === $tab ) : ?>
@@ -606,6 +623,76 @@ $status_labels = array(
 					</ul>
 				<?php endif; ?>
 			</div>
+		<?php endif; ?>
+	<?php endif; ?>
+
+	<?php if ( 'speed-test' === $tab ) : ?>
+		<hr />
+
+		<?php if ( empty( $opts['opt_speed_test_enabled'] ) ) : ?>
+			<p><em><?php esc_html_e( 'A sebességteszt jelenleg ki van kapcsolva - kapcsold be fent, és jelentkezz be adminisztrátorként, hogy legyen mit mérni.', 'fixer' ); ?></em></p>
+		<?php else : ?>
+			<?php $login_stats = Fixer_Speed_Test::stats( $speed_login_samples ); ?>
+			<h2><?php esc_html_e( 'Admin bejelentkezési idők', 'fixer' ); ?></h2>
+			<?php if ( $login_stats ) : ?>
+				<p>
+					<?php
+					printf(
+						/* translators: 1: count, 2: average ms, 3: min ms, 4: max ms */
+						esc_html__( '%1$d mérés - átlag: %2$s ms, minimum: %3$s ms, maximum: %4$s ms', 'fixer' ),
+						(int) $login_stats['count'],
+						esc_html( round( $login_stats['avg'], 1 ) ),
+						esc_html( round( $login_stats['min'], 1 ) ),
+						esc_html( round( $login_stats['max'], 1 ) )
+					);
+					?>
+				</p>
+			<?php endif; ?>
+			<div class="fixer-chart-wrap">
+				<?php echo Fixer_Speed_Test::render_chart( $speed_login_samples ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+			</div>
+			<p class="description"><?php esc_html_e( 'Zöld: 1 másodperc alatt. Sárga szaggatott vonal: 1 másodperc. Piros szaggatott vonal és piros oszlop: 3 másodperc felett.', 'fixer' ); ?></p>
+
+			<h2><?php esc_html_e( 'Admin oldalbetöltési idők (bejelentkezés után látogatott oldalak)', 'fixer' ); ?></h2>
+			<?php $pageload_stats = Fixer_Speed_Test::stats( $speed_pageload_samples ); ?>
+			<?php if ( $pageload_stats ) : ?>
+				<p>
+					<?php
+					printf(
+						/* translators: 1: count, 2: average ms, 3: min ms, 4: max ms */
+						esc_html__( '%1$d mérés - átlag: %2$s ms, minimum: %3$s ms, maximum: %4$s ms', 'fixer' ),
+						(int) $pageload_stats['count'],
+						esc_html( round( $pageload_stats['avg'], 1 ) ),
+						esc_html( round( $pageload_stats['min'], 1 ) ),
+						esc_html( round( $pageload_stats['max'], 1 ) )
+					);
+					?>
+				</p>
+			<?php endif; ?>
+			<div class="fixer-chart-wrap">
+				<?php echo Fixer_Speed_Test::render_chart( $speed_pageload_samples ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+			</div>
+
+			<?php if ( ! empty( $speed_pageload_samples ) ) : ?>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Időpont', 'fixer' ); ?></th>
+							<th><?php esc_html_e( 'Oldal', 'fixer' ); ?></th>
+							<th><?php esc_html_e( 'Idő (ms)', 'fixer' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+					<?php foreach ( array_reverse( $speed_pageload_samples ) as $row ) : ?>
+						<tr>
+							<td><?php echo esc_html( $row->created_at ); ?></td>
+							<td><code><?php echo esc_html( $row->detail ); ?></code></td>
+							<td><?php echo esc_html( $row->duration_ms ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
 		<?php endif; ?>
 	<?php endif; ?>
 	<?php endif; ?>

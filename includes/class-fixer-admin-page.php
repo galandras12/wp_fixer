@@ -98,7 +98,7 @@ class Fixer_Admin_Page {
 		$discovery  = Fixer_Hook_Deferral::discover();
 		$log        = Fixer_Logger::get_recent( 300 );
 		$tab        = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'login'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! in_array( $tab, array( 'login', 'server', 'performance', 'object-cache' ), true ) ) {
+		if ( ! in_array( $tab, array( 'login', 'server', 'performance', 'object-cache', 'speed-test' ), true ) ) {
 			$tab = 'login';
 		}
 		$server_checks    = 'server' === $tab ? Fixer_Server_Info::get_checks() : array();
@@ -110,6 +110,9 @@ class Fixer_Admin_Page {
 		$oc_connected    = 'object-cache' === $tab ? Fixer_Object_Cache::is_connected_this_request() : false;
 		$oc_test_result  = 'object-cache' === $tab ? Fixer_Object_Cache::get_and_clear_test_result() : null;
 		$oc_message      = 'object-cache' === $tab ? Fixer_Object_Cache::get_and_clear_message() : null;
+
+		$speed_login_samples    = 'speed-test' === $tab ? Fixer_Speed_Test::get_samples( Fixer_Speed_Test::TYPE_LOGIN, 50 ) : array();
+		$speed_pageload_samples = 'speed-test' === $tab ? Fixer_Speed_Test::get_samples( Fixer_Speed_Test::TYPE_PAGELOAD, 100 ) : array();
 
 		require FIXER_DIR . 'includes/admin-page-view.php';
 	}

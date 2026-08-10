@@ -40,6 +40,7 @@ class Fixer_Core {
 		Fixer_Error_Filter::init();
 		Fixer_Session_Reset::init();
 		Fixer_Login_Speed::init();
+		Fixer_Speed_Test::init();
 
 		// Needs to run after every other plugin has registered its own hooks,
 		// so it can see (and, for the deferral engine, safely remove) them.
@@ -47,7 +48,13 @@ class Fixer_Core {
 	}
 
 	public static function late_setup() {
-		Fixer_Profiler::maybe_instrument();
+		// Order matters: the deferral engine must strip a deferred plugin's
+		// *original* callback off the hook first. If the profiler wrapped it
+		// first, the deferral engine would see the profiler's own closure
+		// (file: class-fixer-profiler.php) instead of the plugin's, always
+		// resolve it to "fixer", and never match any admin-selected plugin -
+		// silently making the "Pluginok háttérbe tétele" list a no-op.
 		Fixer_Hook_Deferral::maybe_setup();
+		Fixer_Profiler::maybe_instrument();
 	}
 }

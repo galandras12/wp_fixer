@@ -29,3 +29,15 @@
 	background: #fbdcdc;
 	color: #8a1f1f;
 }
+
+.fixer-chart-wrap {
+	max-width: 900px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	padding: 12px;
+	margin-bottom: 1em;
+}
+
+.fixer-chart {
+	display: block;
+}
