@@ -15,7 +15,8 @@ $type_labels = array(
 	'http_capped'   => __( 'Korlátozott HTTP hívás', 'fixer' ),
 	'mail_deferred' => __( 'Halasztott email', 'fixer' ),
 	'hook_deferred' => __( 'Háttérbe tett hook', 'fixer' ),
-	'php_wall_time' => __( 'PHP feldolgozási idő', 'fixer' ),
+	'php_wall_time'       => __( 'PHP idő a hitelesítésig', 'fixer' ),
+	'php_wall_time_total' => __( 'PHP teljes idő (wp_login hookokkal)', 'fixer' ),
 );
 
 // Group the log by request, and work out the slowest contributor per request.
@@ -26,10 +27,11 @@ foreach ( $log as $row ) {
 
 $requests_summary = array();
 foreach ( $by_request as $request_id => $rows ) {
-	$total     = 0;
-	$slowest   = null;
-	$wall_time = null;
-	$when      = $rows[0]->created_at;
+	$total           = 0;
+	$slowest         = null;
+	$wall_time       = null;
+	$wall_time_total = null;
+	$when            = $rows[0]->created_at;
 	foreach ( $rows as $row ) {
 		if ( 'hook_timing' === $row->type && null !== $row->duration_ms ) {
 			$total += (float) $row->duration_ms;
@@ -38,15 +40,18 @@ foreach ( $by_request as $request_id => $rows ) {
 			}
 		} elseif ( 'php_wall_time' === $row->type ) {
 			$wall_time = $row;
+		} elseif ( 'php_wall_time_total' === $row->type ) {
+			$wall_time_total = $row;
 		}
 	}
 	$requests_summary[] = array(
-		'request_id' => $request_id,
-		'when'       => $when,
-		'total_ms'   => $total,
-		'slowest'    => $slowest,
-		'wall_time'  => $wall_time,
-		'rows'       => $rows,
+		'request_id'      => $request_id,
+		'when'            => $when,
+		'total_ms'        => $total,
+		'slowest'         => $slowest,
+		'wall_time'       => $wall_time,
+		'wall_time_total' => $wall_time_total,
+		'rows'            => $rows,
 	);
 }
 usort(
@@ -120,11 +125,16 @@ $status_labels = array(
 			</p>
 			<?php if ( $latest['wall_time'] ) : ?>
 				<p>
-					<strong><?php esc_html_e( 'PHP feldolgozási idő (a szerveren belül):', 'fixer' ); ?></strong>
+					<strong><?php esc_html_e( 'PHP idő a hitelesítésig:', 'fixer' ); ?></strong>
 					<?php echo esc_html( $latest['wall_time']->duration_ms ); ?> ms
+					<?php if ( $latest['wall_time_total'] ) : ?>
+						—
+						<strong><?php esc_html_e( 'teljes PHP idő (a wp_login-hoz kötött plugin-funkciókkal együtt):', 'fixer' ); ?></strong>
+						<?php echo esc_html( $latest['wall_time_total']->duration_ms ); ?> ms
+					<?php endif; ?>
 					<br />
 					<em>
-						<?php esc_html_e( 'Ha ez a szám sokkal kisebb, mint amennyit a böngésződ mért (pl. 300 ms a 98 másodperc helyett), a késés nem a WordPress kódjában keletkezik, hanem még mielőtt a PHP elkezdte volna feldolgozni a kérést (hálózat, tűzfal, vagy a szerveren várakozó, lefoglalt PHP workerek). Ebben az esetben a szerver/tárhely oldali beállításokat kell megnézni - lásd a "Szerver diagnosztika" fület.', 'fixer' ); ?>
+						<?php esc_html_e( 'Ha a "hitelesítésig" idő kicsi, de a "teljes" idő nagy, a login-adatok ellenőrzése gyors volt, de a bejelentkezés UTÁN lefutó plugin-funkciók (napló, értesítő email, online állapot) lassítják a választ - ezeket a "Pluginok háttérbe tétele bejelentkezéskor" listában tudod kikapcsolni lentebb. Ha még a "teljes" PHP idő is sokkal kisebb, mint amennyit a böngésződ mért, a maradék késés a PHP indulása előtt keletkezik (hálózat, szerver sor) - lásd a "Szerver diagnosztika" fület.', 'fixer' ); ?>
 					</em>
 				</p>
 			<?php endif; ?>
