@@ -4,7 +4,7 @@ Tags: login, performance, wp-login, smtp, debug
 Requires at least: 5.7
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,6 +72,12 @@ Két új fül:
   adminisztrátori jogú felhasználók bejelentkezési idejét, és a bejelentkezés után általuk
   meglátogatott oldalak betöltési idejét - csak "manage_options" jogosultságú felhasználókra
   vonatkozik, senki más látogatását nem méri.
+* A "Szerver diagnosztika" fülön új, 3 szakaszos, grafikonos válaszidő-teszt: külön méri a
+  webszerver (statikus fájl), a PHP (WordPress betöltése nélküli, önálló PHP fájl) és az
+  adatbázis (közvetlen lekérdezés) válaszidejét, "Teszt indítása" gombbal, a korábbi futtatások
+  történetével.
+* Minden napló (Bejelentkezés, Szerver diagnosztika, Sebességteszt) letölthető .txt fájlként,
+  `Modul-ÉÉÉÉ-HH-NN-óó-pp-mm-log.txt` formátumban.
 
 == Installation ==
 
@@ -82,6 +88,11 @@ Két új fül:
    háttérbe tétele" listában válaszd ki, melyik plugin(oka)t szeretnéd háttérbe tenni.
 
 == Changelog ==
+
+= 1.6.0 =
+* Új, 3 szakaszos, grafikonos szerver válaszidő-teszt a "Szerver diagnosztika" fülön: webszerver / PHP / adatbázis szakaszok külön mérve, "Teszt indítása" gombbal, futtatás-történettel.
+* Minden napló (Bejelentkezés, Szerver diagnosztika, Sebességteszt) letölthető .txt fájlként, `Modul-ÉÉÉÉ-HH-NN-óó-pp-mm-log.txt` néven.
+* Apró javítás: a "Bejelentkezés" fülön a napló-letöltés melletti "Napló törlése" gomb elrendezése egy sorba került a letöltés gombbal.
 
 = 1.5.0 =
 * Hibajavítás: a diagnosztikai időmérés (profiler) a Pluginok háttérbe tétele funkció ELŐTT futott le, emiatt az utóbbi soha nem tudta helyesen azonosítani, melyik pluginhoz tartozik egy hook - így a bejelölt pluginok háttérbe tétele valójában nem történt meg. Most a sorrend javítva.

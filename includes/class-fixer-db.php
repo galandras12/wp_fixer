@@ -47,7 +47,7 @@ class Fixer_DB {
 	 * own small caps, so a burst of admin page views can never crowd the
 	 * regular login-diagnostic rows out of the shared retention budget.
 	 */
-	const SPEEDTEST_TYPES = array( 'speedtest_login', 'speedtest_pageload' );
+	const SPEEDTEST_TYPES = array( 'speedtest_login', 'speedtest_pageload', 'server_stage_web', 'server_stage_php', 'server_stage_db' );
 
 	public static function prune( $keep = 500 ) {
 		global $wpdb;

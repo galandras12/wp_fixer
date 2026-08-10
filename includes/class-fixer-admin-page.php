@@ -104,6 +104,10 @@ class Fixer_Admin_Page {
 		$server_checks    = 'server' === $tab ? Fixer_Server_Info::get_checks() : array();
 		$autoload_options = 'server' === $tab ? Fixer_Server_Info::get_largest_autoloaded_options() : array();
 
+		$server_speed_web = 'server' === $tab ? Fixer_Server_Speed_Test::get_samples( Fixer_Server_Speed_Test::TYPE_WEB ) : array();
+		$server_speed_php = 'server' === $tab ? Fixer_Server_Speed_Test::get_samples( Fixer_Server_Speed_Test::TYPE_PHP ) : array();
+		$server_speed_db  = 'server' === $tab ? Fixer_Server_Speed_Test::get_samples( Fixer_Server_Speed_Test::TYPE_DB ) : array();
+
 		$login_assets_seen = 'performance' === $tab ? Fixer_Login_Speed::get_seen_assets() : array();
 
 		$oc_status       = 'object-cache' === $tab ? Fixer_Object_Cache::dropin_status() : 'missing';

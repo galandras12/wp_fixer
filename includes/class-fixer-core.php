@@ -19,6 +19,8 @@ class Fixer_Core {
 		if ( is_admin() ) {
 			Fixer_Admin_Page::init();
 			Fixer_Object_Cache::init();
+			Fixer_Server_Speed_Test::init();
+			Fixer_Log_Export::init();
 		}
 	}
 

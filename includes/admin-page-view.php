@@ -693,6 +693,8 @@ $status_labels = array(
 					</tbody>
 				</table>
 			<?php endif; ?>
+
+			<p><a href="<?php echo esc_url( Fixer_Log_Export::download_url( 'speedtest' ) ); ?>" class="button"><?php esc_html_e( 'Napló letöltése (.txt)', 'fixer' ); ?></a></p>
 		<?php endif; ?>
 	<?php endif; ?>
 	<?php endif; ?>
@@ -702,11 +704,12 @@ $status_labels = array(
 
 		<h2><?php esc_html_e( 'Napló (utolsó bejelentkezési kísérletek)', 'fixer' ); ?></h2>
 
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-bottom:1em;">
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-bottom:1em;margin-right:.5em;">
 			<?php wp_nonce_field( 'fixer_clear_log' ); ?>
 			<input type="hidden" name="action" value="fixer_clear_log" />
 			<?php submit_button( __( 'Napló törlése', 'fixer' ), 'delete', 'submit', false ); ?>
 		</form>
+		<a href="<?php echo esc_url( Fixer_Log_Export::download_url( 'login' ) ); ?>" class="button"><?php esc_html_e( 'Napló letöltése (.txt)', 'fixer' ); ?></a>
 
 		<?php if ( empty( $log ) ) : ?>
 			<p><em><?php esc_html_e( 'Még nincs rögzített adat. Jelentkezz be egyszer, hogy legyen mit mérni.', 'fixer' ); ?></em></p>
@@ -789,11 +792,49 @@ $status_labels = array(
 			</table>
 		<?php endif; ?>
 
-		<h2><?php esc_html_e( 'Karbantartás', 'fixer' ); ?></h2>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<h2><?php esc_html_e( 'Szerver válaszidő-teszt (webszerver / PHP / adatbázis)', 'fixer' ); ?></h2>
+		<p><?php esc_html_e( 'Három külön szakaszban méri, milyen gyorsan válaszol a szerver: a "webszerver" szakasz egy statikus fájlt kér le (a PHP-t meg sem érinti), a "PHP" szakasz egy önálló, a WordPress-t be sem töltő PHP fájlt hív meg, az "adatbázis" szakasz pedig egy közvetlen adatbázis-lekérdezést mér. Mivel a teszt a szerver saját magával kommunikál (a WordPress ezen az oldalon kéri le saját magától), ez a szerver saját belső válaszidejét mutatja, nem egy külső hálózati sebességtesztet.', 'fixer' ); ?></p>
+
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-bottom:1em;">
+			<?php wp_nonce_field( 'fixer_run_server_speedtest' ); ?>
+			<input type="hidden" name="action" value="fixer_run_server_speedtest" />
+			<?php submit_button( __( 'Teszt indítása', 'fixer' ), 'primary', 'submit', false ); ?>
+		</form>
+
+		<h3><?php esc_html_e( 'Webszerver szakasz (statikus fájl)', 'fixer' ); ?></h3>
+		<?php $web_stats = Fixer_Speed_Test::stats( $server_speed_web ); ?>
+		<?php if ( $web_stats ) : ?>
+			<p><?php printf( esc_html__( '%1$d mérés - átlag: %2$s ms, min: %3$s ms, max: %4$s ms', 'fixer' ), (int) $web_stats['count'], esc_html( round( $web_stats['avg'], 1 ) ), esc_html( round( $web_stats['min'], 1 ) ), esc_html( round( $web_stats['max'], 1 ) ) ); ?></p>
+		<?php endif; ?>
+		<div class="fixer-chart-wrap">
+			<?php echo Fixer_Speed_Test::render_chart( $server_speed_web, 150, 500 ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+		</div>
+
+		<h3><?php esc_html_e( 'PHP szakasz (WordPress betöltése nélkül)', 'fixer' ); ?></h3>
+		<?php $php_stats = Fixer_Speed_Test::stats( $server_speed_php ); ?>
+		<?php if ( $php_stats ) : ?>
+			<p><?php printf( esc_html__( '%1$d mérés - átlag: %2$s ms, min: %3$s ms, max: %4$s ms', 'fixer' ), (int) $php_stats['count'], esc_html( round( $php_stats['avg'], 1 ) ), esc_html( round( $php_stats['min'], 1 ) ), esc_html( round( $php_stats['max'], 1 ) ) ); ?></p>
+		<?php endif; ?>
+		<div class="fixer-chart-wrap">
+			<?php echo Fixer_Speed_Test::render_chart( $server_speed_php, 150, 500 ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+		</div>
+
+		<h3><?php esc_html_e( 'Adatbázis szakasz', 'fixer' ); ?></h3>
+		<?php $db_stats = Fixer_Speed_Test::stats( $server_speed_db ); ?>
+		<?php if ( $db_stats ) : ?>
+			<p><?php printf( esc_html__( '%1$d mérés - átlag: %2$s ms, min: %3$s ms, max: %4$s ms', 'fixer' ), (int) $db_stats['count'], esc_html( round( $db_stats['avg'], 1 ) ), esc_html( round( $db_stats['min'], 1 ) ), esc_html( round( $db_stats['max'], 1 ) ) ); ?></p>
+		<?php endif; ?>
+		<div class="fixer-chart-wrap">
+			<?php echo Fixer_Speed_Test::render_chart( $server_speed_db, 20, 100 ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+		</div>
+		<p class="description"><?php esc_html_e( 'Ha a "webszerver" vagy "PHP" szakasz hibát jelez, előfordulhat, hogy egy biztonsági plugin (pl. Wordfence) blokkolja a szerver saját magához intézett kérését - ez esetben a teszt maga nem megbízható, de ez önmagában nem jelent tényleges lassulást.', 'fixer' ); ?></p>
+
+		<h2><?php esc_html_e( 'Karbantartás és napló', 'fixer' ); ?></h2>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:.5em;">
 			<?php wp_nonce_field( 'fixer_delete_expired_transients' ); ?>
 			<input type="hidden" name="action" value="fixer_delete_expired_transients" />
 			<?php submit_button( __( 'Lejárt tranzitensek törlése', 'fixer' ), 'secondary', 'submit', false ); ?>
 		</form>
+		<a href="<?php echo esc_url( Fixer_Log_Export::download_url( 'server' ) ); ?>" class="button"><?php esc_html_e( 'Napló letöltése (.txt)', 'fixer' ); ?></a>
 	<?php endif; ?>
 </div>
